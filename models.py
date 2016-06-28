@@ -13,7 +13,7 @@ from sqlalchemy.orm import relationship, backref, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 import datetime
 
-# Standard database connection infrastructure
+# Standard database connection infrastructure (set echo=False when you're done testing)
 Base = declarative_base()
 db = create_engine('sqlite:///open750.db', echo=True)
 
