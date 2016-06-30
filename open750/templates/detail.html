@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block header %}Home{% endblock %}
+
+{% block headline %}
+	<h2>Details</h2>
+{% endblock %}
+
+{% block body %}
+<h3><i>"{{ s.slug }}..."</i></h3>
+
+<form action="{{ url_for('open750.details', id=s.id) }}" method="post">
+	{{ form.hidden_tag() }}
+
+	{{ form.slug.label }} {{ form.slug }}
+	<br/> {% if form.slug.errors %}{{ form.slug.errors[0] }}{% endif %}
+
+	<br/>
+
+	{{ form.text.label }} {{ form.text(rows='15',cols='50') }}
+	<br/> {% if form.text.errors %}{{ form.text.errors[0] }}{% endif %}
+
+	<br/>{{ form.submit }}
+</form>
+{% endblock %}

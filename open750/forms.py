@@ -4,6 +4,6 @@ from flask.ext.pagedown.fields import PageDownField
 from wtforms.validators import DataRequired
 
 class ScribbleForm(Form):
-	title = TextField('Title?')
-	body = PageDownField('Scribble!', validators=[DataRequired()])
+	slug = TextField('Title?')
+	text = PageDownField('Scribble!', validators=[DataRequired()])
 	submit = SubmitField('Save it!', validators=[DataRequired()])
