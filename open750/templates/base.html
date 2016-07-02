@@ -15,9 +15,20 @@
 
 <div class="container">
 <h1><a href="{{ url_for('.home') }}">open750</a></h1>
+{% if session['current_user'] %}
+<h5>(<a href="{{ url_for('.logout') }}">logout</a>)</h5>
+{% else %}
+<h5>(<a href="{{ url_for('.home') }}">login</a>)</h5>
+{% endif %}
+	{% with messages = get_flashed_messages() %}
+	<ul>
+	{% for m in messages %}
+		<li style="color: green; font-weight: bold;">{{ m }}</li>
+	{% endfor %}
+	</ul>
+	{% endwith %}
 <hr />
-{% block headline %}
-{% endblock %}
+{% block headline %}{% endblock %}
 {% block body %}{% endblock %}
 </div>
 

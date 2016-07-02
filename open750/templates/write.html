@@ -2,16 +2,14 @@
 {% block header %}Home{% endblock %}
 
 {% block headline %}
-	<h2>Details</h2>
+	<h2>Write a new one</h2>
 {% endblock %}
 
 {% block body %}
 <div class="row">
 <div class="c10">
 
-<h3><i>"{{ s.slug }}..."</i></h3>
-
-<form action="{{ url_for('open750.details', id=s.id) }}" method="post">
+<form action="{{ url_for('open750.new') }}" method="post">
 	{{ form.hidden_tag() }}
 
 	<br/>

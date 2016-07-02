@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block header %}Home{% endblock %}
+
+{% block headline %}
+	<h2>Welcome!</h2>
+{% endblock %}
+
+{% block body %}
+<div class="row">
+<div class="c7 o1">
+<h3>This is open750, where you can make an account and store writings of 750 or more words each.</h3>
+<h4>It's like 750words, but free.</h4>
+
+<hr />
+<h4>Sign up now!</h4>
+<form action="{{ url_for('open750.landing') }}" method="post">
+	{{ form.hidden_tag() }}
+
+	<br/>{{ form.name.label }} {{ form.name }}
+	<br/> {% if form.name.errors %}<span style="color: red;">{{ form.name.errors[0] }}</span>{% endif %}
+
+	<br/>{{ form.email.label }} {{ form.email }}
+	<br/> {% if form.email.errors %}<span style="color: red;">{{ form.email.errors[0] }}</span>{% endif %}
+
+	<br/>{{ form.password.label }} {{ form.password }}
+	<br/> {% if form.password.errors %}<span style="color: red;">{{ form.password.errors[0] }}</span>{% endif %}
+
+	<br/>{{ form.confirm.label }} {{ form.confirm }}
+	<br/> {% if form.confirm.errors %}<span style="color: red;">{{ form.confirm.errors[0] }}</span>{% endif %}
+
+	<br/>{{ form.robot.label }} {{ form.robot }}
+	<br/> {% if form.robot.errors %}<span style="color: red;">{{ form.robot.errors[0] }}</span>{% endif %}
+
+	<br/>{{ form.submit(class="btn-green") }}
+</form>
+
+</div>
+</div>
+{% endblock %}
