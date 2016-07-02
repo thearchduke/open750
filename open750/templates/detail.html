@@ -6,6 +6,9 @@
 {% endblock %}
 
 {% block body %}
+<div class="row">
+<div class="c10">
+
 <h3><i>"{{ s.slug }}..."</i></h3>
 
 <form action="{{ url_for('open750.details', id=s.id) }}" method="post">
@@ -16,9 +19,22 @@
 
 	<br/>
 
-	{{ form.text.label }} {{ form.text(rows='15',cols='50') }}
-	<br/> {% if form.text.errors %}{{ form.text.errors[0] }}{% endif %}
+	{{ form.text.label }} {{ form.text(rows='25',cols='80', id="scribbleArea", style="float:left; margin-right: 20px;") }}
+	<br/><i><span id="wordCount"></span> word<span id="plural">s</span></i>
+	<br/> {% if form.text.errors %}<span style="color: red;">{{ form.text.errors[0] }}</span>{% endif %}
 
-	<br/>{{ form.submit }}
+	<br/>{{ form.submit(class="btn-green") }}
 </form>
+
+</div>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function() {
+		$('#wordCount').text($('#scribbleArea').text().split(' ').length - 1);
+		$('#scribbleArea').keyup(function() {
+			$('#wordCount').text(this.value.split(' ').length - 1);
+		});
+	});
+</script>
 {% endblock %}

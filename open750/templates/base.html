@@ -2,15 +2,25 @@
 <head>
 <title>open750 | {% block header %}{% endblock %}</title>
 
-<script src="static/jquery-1.7.1.min.js"></script>
+<link rel="stylesheet" type="text/css" href="{{ url_for('.static', filename='css/zimit.min.css') }}">
+<script src="{{ url_for('.static', filename='js/jquery-2.0.0.min.js') }}"></script>
+
 {% block scriptloader %}{% endblock %}
+
+<meta charset="utf-8">
+
 </head>
 
 <body>
-<h1>open750</h1>
+
+<div class="container">
+<h1><a href="{{ url_for('.home') }}">open750</a></h1>
 <hr />
 {% block headline %}
 {% endblock %}
 {% block body %}{% endblock %}
+</div>
+
+<script src="{{ url_for('.static', filename='js/zimit.min.js') }}"></script>
 </body>
 </html>

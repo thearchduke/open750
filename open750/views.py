@@ -3,7 +3,7 @@ from flask import Blueprint, render_template, url_for, request, redirect, flash
 from models import session, Scribble
 from forms import ScribbleForm
 
-open750 = Blueprint('open750', __name__, template_folder='templates')
+open750 = Blueprint('open750', __name__, template_folder='templates', static_folder='static')
 
 @open750.route('/', methods=['GET'])
 def home():
@@ -14,4 +14,6 @@ def home():
 def details(id):
 	s = session.query(Scribble).filter(Scribble.id == id).first()
 	form = ScribbleForm(obj=s)
+	if form.validate_on_submit():
+		return "ok!"
 	return render_template('detail.html', form=form, s=s)
