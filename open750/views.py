@@ -20,8 +20,12 @@ def check_auth(username, password):
     password combination is valid.
     """
     u = session.query(User).filter(User.name == username).first()
-    flask_session['current_user'] = {'name': u.name, 'id': u.id}
-    return u.verify_password(password)
+    if u.verify_password(password):
+    	flask_session['current_user'] = {'name': u.name, 'id': u.id}
+    	return True
+    else:
+    	flask_session['current_user'] = None
+    	return False
 
 def authenticate():
 	"""Sends a 401 response that enables basic auth"""
