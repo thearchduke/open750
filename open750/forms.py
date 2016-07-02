@@ -7,7 +7,7 @@ class SevenFiftyForm(Form):
 	text = TextAreaField('Write!', validators=[DataRequired()])
 
 	def validate_text(form, field):
-		if len(field.data.split(' ')) < 750:
+		if len(field.data.split()) < 750:
 			raise ValidationError("You have to write at least 750 words, silly!")
 
 	submit = SubmitField('Save it!', validators=[DataRequired()])
