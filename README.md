@@ -5,6 +5,8 @@ I signed up for [750Words.com](http://www.750words.com) at a friend's recommenda
 
 But then I saw that it costs $5 a month so I decided to make my own during my morning commute. 
 
+See server.py for config details
+
 Copyright 2016 Tynan Burke, GPL etc. follows.
 
     This program is free software: you can redistribute it and/or modify
