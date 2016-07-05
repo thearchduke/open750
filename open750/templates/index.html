@@ -15,7 +15,7 @@
 <ul>
 	{% for entry in s %}
 		<li>
-			<a href="{{ url_for('open750.details', id=entry.id) }}">{{ entry.slug }}"</a> ({{ entry.wordCount }} words) on {{ entry.date.month }}.{{ entry.date.day }}.{{ entry.date.year }}
+			<a href="{{ url_for('open750.read', id=entry.id) }}">{{ entry.slug }}"</a> ({{ entry.wordCount }} words) on {{ entry.date.month }}.{{ entry.date.day }}.{{ entry.date.year }}
 		</li>
 	{% endfor %}
 </ul>

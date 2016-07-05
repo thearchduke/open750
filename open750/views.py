@@ -69,7 +69,6 @@ def landing():
 @requires_auth
 def home():
 	flask_session['writable'] = False
-	flash('welcome, %s' % flask_session.get('current_user')['name'])
 	sevenfiftys = session.query(SevenFifty).filter(\
 		SevenFifty.user_id == flask_session.get('current_user')['id']).all()
 	if sevenfiftys:
@@ -81,6 +80,7 @@ def home():
 	return render_template('index.html', s=sevenfiftys)
 
 @open750.route('/write', methods=['GET', 'POST'])
+@requires_auth
 def write():
 	if not flask_session['writable']:
 		flash("Sorry, you can't write any more today")
@@ -95,25 +95,19 @@ def write():
 		return redirect(url_for('.home'))
 	return render_template('write.html', form=form)
 
-"""
 @open750.route('/<id>', methods=['GET'])
+@requires_auth
 def read(id):
 	s = session.query(SevenFifty).filter(SevenFifty.id == id).first()
 	if s.user_id != flask_session['current_user']['id']:
 		flash("You aren't authorized to view that post.")
-		return redirect(url_for('home'))
+		return redirect(url_for('.home'))
 	if not s: return render_template('404.html'), 404
-	form = SevenFiftyForm(obj=s)
-	if form.validate_on_submit():
-		form.populate_obj(s)
-		session.add(s)
-		session.commit()
-		flash('Thanks for updating your post \'%s.\'' % s.slug)
-	return render_template('detail.html', form=form, s=s)
-"""
+	return render_template('read.html', s=s)
 
 @open750.route('/<id>/edit', methods=['GET', 'POST'])
-def details(id):
+@requires_auth
+def edit(id):
 	s = session.query(SevenFifty).filter(SevenFifty.id == id).first()
 	if s.user_id != flask_session['current_user']['id']:
 		flash("You aren't authorized to view that post.")
@@ -122,9 +116,9 @@ def details(id):
 	form = SevenFiftyForm(obj=s)
 	if form.validate_on_submit():
 		form.populate_obj(s)
+		s.wordCount = len(s.text.split(' ')) - 1
 		session.add(s)
 		session.commit()
 		flash('Thanks for updating your post \'%s.\'' % s.slug)
 		return redirect(url_for('.home'))
-	return render_template('detail.html', form=form, s=s)
-
+	return render_template('edit.html', form=form, s=s)

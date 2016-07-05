@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block header %}Home{% endblock %}
+
+{% block headline %}
+	<h2>Details</h2>
+{% endblock %}
+
+{% block body %}
+<div class="row">
+<div class="c10">
+
+<h3><i>"{{ s.slug }}..."</i></h3> ({{ s.wordCount }} words) on {{ s.date.month }}.{{ s.date.day }}.{{ s.date.year }}
+<br /><a href="{{ url_for('.edit', id=s.id) }}">edit</a>
+
+<p class="reader" style="white-space: pre-wrap;">{{ s.text|safe }}</p>
+
+</div>
+</div>
+{% endblock %}

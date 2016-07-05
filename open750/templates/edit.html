@@ -11,12 +11,12 @@
 
 <h3><i>"{{ s.slug }}..."</i></h3>
 
-<form action="{{ url_for('open750.details', id=s.id) }}" method="post">
+<form action="{{ url_for('open750.edit', id=s.id) }}" method="post">
 	{{ form.hidden_tag() }}
 
 	<br/>
 
-	{{ form.text.label }} {{ form.text(rows='25',cols='80', id="scribbleArea", style="float:left; margin-right: 20px;") }}
+	{{ form.text.label }} {{ form.text(rows='25',cols='80', id="scribbleArea", style="float:left; margin-right: 20px;")|safe }}
 	<br/><i><span id="wordCount"></span> word<span id="plural">s</span></i>
 	<br/> {% if form.text.errors %}<span style="color: red;">{{ form.text.errors[0] }}</span>{% endif %}
 
