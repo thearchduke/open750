@@ -4,6 +4,7 @@ from flask import session as flask_session
 from models import session, SevenFifty, User
 from forms import SevenFiftyForm, CreateUserForm
 from functools import wraps
+import datetime
 
 open750 = Blueprint('open750', __name__, template_folder='templates', static_folder='static')
 
@@ -67,19 +68,30 @@ def landing():
 @open750.route('/home', methods=['GET'])
 @requires_auth
 def home():
+	flask_session['writable'] = False
 	flash('welcome, %s' % flask_session.get('current_user')['name'])
 	sevenfiftys = session.query(SevenFifty).filter(\
 		SevenFifty.user_id == flask_session.get('current_user')['id']).all()
+	if sevenfiftys:
+		now = datetime.datetime.now()
+		if sevenfiftys[-1].date.date() <= (datetime.datetime.now().date() - datetime.timedelta(days=1)):
+			flask_session['writable'] = True
+	else:
+		flask_session['writable'] = True
 	return render_template('index.html', s=sevenfiftys)
 
 @open750.route('/write', methods=['GET', 'POST'])
 def write():
+	if not flask_session['writable']:
+		flash("Sorry, you can't write any more today")
+		return redirect(url_for('.home'))
 	form = SevenFiftyForm()
 	if form.validate_on_submit():
 		s = SevenFifty(form.text.data, flask_session['current_user']['id'])
 		session.add(s)
 		session.commit()
 		flash('Thanks for adding a new post. Come back tomorrow!')
+		flask_session['writable'] = False
 		return redirect(url_for('.home'))
 	return render_template('write.html', form=form)
 
