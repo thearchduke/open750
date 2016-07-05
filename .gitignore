@@ -1,4 +1,5 @@
 *.db
+config_real.py
 *.pyc
 .DS_*
 venv/

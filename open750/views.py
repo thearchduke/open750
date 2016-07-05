@@ -54,6 +54,8 @@ def logout():
 
 @open750.route('/', methods=['GET', 'POST'])
 def landing():
+	if request.authorization:
+		return redirect(url_for('.home'))
 	form = CreateUserForm()
 	if form.validate_on_submit():
 		u = User(form.name.data, form.password.data, form.email.data)
@@ -71,7 +73,7 @@ def home():
 	return render_template('index.html', s=sevenfiftys)
 
 @open750.route('/write', methods=['GET', 'POST'])
-def new():
+def write():
 	form = SevenFiftyForm()
 	if form.validate_on_submit():
 		s = SevenFifty(form.text.data, flask_session['current_user']['id'])
@@ -103,7 +105,7 @@ def details(id):
 	s = session.query(SevenFifty).filter(SevenFifty.id == id).first()
 	if s.user_id != flask_session['current_user']['id']:
 		flash("You aren't authorized to view that post.")
-		return redirect(url_for('home'))
+		return redirect(url_for('.home'))
 	if not s: return render_template('404.html'), 404
 	form = SevenFiftyForm(obj=s)
 	if form.validate_on_submit():
@@ -111,5 +113,6 @@ def details(id):
 		session.add(s)
 		session.commit()
 		flash('Thanks for updating your post \'%s.\'' % s.slug)
+		return redirect(url_for('.home'))
 	return render_template('detail.html', form=form, s=s)
 
