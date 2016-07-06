@@ -1,4 +1,3 @@
-*.db
 config_real.py
 *.pyc
 .DS_*

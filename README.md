@@ -7,6 +7,8 @@ But then I saw that it costs $5 a month so I decided to make my own during my mo
 
 See server.py for config details
 
+Deployed at [heroku](open750.herokuapp.com/open750/)
+
 Copyright 2016 Tynan Burke, GPL etc. follows.
 
     This program is free software: you can redistribute it and/or modify
