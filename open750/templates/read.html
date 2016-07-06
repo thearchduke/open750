@@ -12,7 +12,7 @@
 <h3><i>"{{ s.slug }}..."</i></h3> ({{ s.wordCount }} words) on {{ s.date.month }}.{{ s.date.day }}.{{ s.date.year }}
 <br /><a href="{{ url_for('.edit', id=s.id) }}">edit</a>
 
-<p class="reader" style="white-space: pre-wrap;">{{ s.text|safe }}</p>
+<p class="reader" style="white-space: pre-wrap;">{% if config.HTML_SAFE %}{{ s.text|safe }}{% else %}{{ s.text }}{% endif %}</p>
 
 </div>
 </div>
