@@ -10,4 +10,5 @@ app.config.from_object('config')
 
 app.register_blueprint(open750, url_prefix="/open750")
 
-app.run(debug=True)
+if __name__ == '__main__':
+	app.run(debug=True)
