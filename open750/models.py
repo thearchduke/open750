@@ -5,6 +5,11 @@ Database models for open750. This work is distributed under the GPL, waivers, li
 Copyright J. Tynan Burke 2016 http://www.tynanburke.com
 
 #TODO: Implement users and stuff, I guess
+
+#TODO: Hashtags. Here's the regex: (\s+|^)#([^\s]*)\b
+import re
+re_hash = re.compile(ur'(\s+|^)(#[^\s]*)\b')
+hashes = [s[1] for s in re.findall(re_hash)]
 '''
 
 # Standard flask/sqlalchemy imports
