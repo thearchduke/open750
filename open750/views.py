@@ -44,6 +44,28 @@ def requires_auth(f):
         return f(*args, **kwargs)
     return decorated
 
+
+def not_authorized():
+	flash("You aren't authorized to view that post.")
+	return redirect(url_for('.home'))
+
+def check_user_for_obj(kind, id):
+	#kind = globals()[kind]
+	obj = session.query(kind).filter(kind.id == id).first()
+
+	## Does it exist
+	if not obj: return render_template('404.html'), 404
+
+	## Check auth
+	uid = None
+	if flask_session.get('current_user'):
+		uid = flask_session['current_user'].get('id')
+	if obj.user_id == uid:
+		return True
+	else:
+		return False
+
+
 @open750.route('/logout', methods=['GET'])
 @requires_auth
 def logout():
@@ -100,9 +122,8 @@ def write():
 @requires_auth
 def read(id):
 	s = session.query(SevenFifty).filter(SevenFifty.id == id).first()
-	if s.user_id != flask_session['current_user']['id']:
-		flash("You aren't authorized to view that post.")
-		return redirect(url_for('.home'))
+	if not check_user_for_obj(SevenFifty, id):
+		return not_authorized()
 	if not s: return render_template('404.html'), 404
 	return render_template('read.html', s=s)
 
@@ -110,9 +131,8 @@ def read(id):
 @requires_auth
 def edit(id):
 	s = session.query(SevenFifty).filter(SevenFifty.id == id).first()
-	if s.user_id != flask_session['current_user']['id']:
-		flash("You aren't authorized to view that post.")
-		return redirect(url_for('.home'))
+	if not check_user_for_obj(SevenFifty, id):
+		return not_authorized()
 	if not s: return render_template('404.html'), 404
 	form = SevenFiftyForm(obj=s)
 	if form.validate_on_submit():
