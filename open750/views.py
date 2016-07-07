@@ -138,6 +138,7 @@ def edit(id):
 	if form.validate_on_submit():
 		form.populate_obj(s)
 		s.wordCount = len(s.text.split())
+		s.update_hashes()
 		session.add(s)
 		session.commit()
 		flash('Thanks for updating your post \'%s.\'' % s.slug)

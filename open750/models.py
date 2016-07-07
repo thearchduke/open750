@@ -19,6 +19,7 @@ from sqlalchemy.ext.declarative import declarative_base
 import datetime
 from passlib.hash import sha256_crypt
 import sys
+import re
 
 # Standard database connection infrastructure (set echo=False when you're done testing)
 Base = declarative_base()
@@ -78,6 +79,14 @@ class SevenFifty(Base):
 
     hashtags = relationship("HashTag", secondary=association_table, back_populates="posts")
 
+    def update_hashes(self):
+        re_hash = re.compile(ur'(\s+|^)(#[^\s]*)\b')
+        hashes = [s[1] for s in re.findall(re_hash, self.text)]
+        for h in hashes:
+            tag = HashTag.create_or_add(h, self)
+        session.add(self)
+        session.commit()
+
     def __init__(self, text, user_id):
         self.date = datetime.datetime.now()
         self.text = text
@@ -85,6 +94,12 @@ class SevenFifty(Base):
         self.slug = self.text[0:63]
         self.user_id = user_id
         self.user = session.query(User).filter(User.id == self.user_id).first()
+
+        ## hashtag handling
+        re_hash = re.compile(ur'(\s+|^)(#[^\s]*)\b')
+        hashes = [s[1] for s in re.findall(re_hash, text)]
+        for h in hashes:
+            tag = HashTag.create_or_add(h, self)
 
     def __repr__(self):
         return "'%s' on %s" % (self.slug, str(self.date))
