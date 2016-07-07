@@ -93,7 +93,8 @@ def write():
 		flash('Thanks for adding a new post. Come back tomorrow!')
 		flask_session['writable'] = False
 		return redirect(url_for('.home'))
-	return render_template('write.html', form=form)
+	new_post = True
+	return render_template('write.html', form=form, new_post = new_post)
 
 @open750.route('/<id>', methods=['GET'])
 @requires_auth
@@ -121,4 +122,12 @@ def edit(id):
 		session.commit()
 		flash('Thanks for updating your post \'%s.\'' % s.slug)
 		return redirect(url_for('.home'))
-	return render_template('edit.html', form=form, s=s)
+	new_post = False
+	return render_template('write.html', form=form, s=s, new_post = new_post)
+
+
+### Testing and stuff
+@open750.route('/test_write', methods=['GET'])
+def test_write():
+	form = SevenFiftyForm()
+	return render_template('write.html', form=form)

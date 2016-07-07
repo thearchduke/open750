@@ -3,7 +3,6 @@ from wtforms import TextField, TextAreaField, SubmitField, PasswordField, Boolea
 from wtforms.validators import DataRequired, EqualTo
 
 class SevenFiftyForm(Form):
-	#slug = TextField('Title?')
 	text = TextAreaField('Write!', validators=[DataRequired()])
 
 	def validate_text(form, field):

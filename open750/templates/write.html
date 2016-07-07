@@ -2,14 +2,22 @@
 {% block header %}Home{% endblock %}
 
 {% block headline %}
-	<h2>Write a new one</h2>
+	{% if new_post %}<h2>Write a new one</h2>
+	{% else %}<h2>Details &amp; Edit</h2>
+	{% endif %}
 {% endblock %}
 
 {% block body %}
 <div class="row">
 <div class="c10">
 
-<form action="{{ url_for('.write') }}" method="post">
+{% if not new_post %}<h3><i>"{{ s.slug }}..."</i></h3>{% endif %}
+
+<form action="
+	{% if new_post %}{{ url_for('.write') }}
+	{% else %}{{ url_for('open750.edit', id=s.id) }}
+	{% endif %}
+" method="post">
 	{{ form.hidden_tag() }}
 
 	<br/>
