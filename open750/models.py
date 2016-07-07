@@ -60,6 +60,11 @@ class User(Base):
         self.hashed_password = self.hash_password(password)
 
 
+association_table = Table('association', Base.metadata,
+    Column('post_id', Integer, ForeignKey('seven_fifties.id')),
+    Column('hash_id', Integer, ForeignKey('hash_tags.id'))
+)
+
 class SevenFifty(Base):
     __tablename__ = 'seven_fifties'
     id = Column(Integer, primary_key=True)
@@ -67,8 +72,11 @@ class SevenFifty(Base):
     wordCount = Column(Integer)
     text = Column(Text)
     slug = Column(String(64))
+
     user_id = Column(Integer, ForeignKey('users.id'))
     user = relationship("User", back_populates='posts')
+
+    hashtags = relationship("HashTag", secondary=association_table, back_populates="posts")
 
     def __init__(self, text, user_id):
         self.date = datetime.datetime.now()
@@ -81,6 +89,30 @@ class SevenFifty(Base):
     def __repr__(self):
         return "'%s' on %s" % (self.slug, str(self.date))
 
+
+class HashTag(Base):
+    __tablename__ = 'hash_tags'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(1024), unique=True)
+    posts = relationship("SevenFifty", secondary=association_table, back_populates="hashtags")
+
+
+    @classmethod
+    def create_or_add(cls, name, post=None):
+        test = session.query(cls).filter(cls.name == name).first()
+        entity = None
+        if test:
+            entity = test
+        else:
+            entity = cls(name=name)
+        if post:
+            if post in entity.posts:
+                pass
+            else:
+                entity.posts.append(post)
+        session.add(entity)
+        session.commit()
+        return entity
 
 
 ## Run models.py independently to create tables
