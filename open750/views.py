@@ -130,4 +130,5 @@ def edit(id):
 @open750.route('/test_write', methods=['GET'])
 def test_write():
 	form = SevenFiftyForm()
-	return render_template('write.html', form=form)
+	new_post = True
+	return render_template('write.html', form=form, new_post=new_post)

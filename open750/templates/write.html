@@ -34,9 +34,20 @@
 
 <script type="text/javascript">
 $(document).ready(function() {
-		$('#wordCount').text($('#scribbleArea').text().split(' ').length - 1);
+		clean = function(l, deletions) {
+			for (var i = 0; i < l.length; i++) {
+				// if the 'word' is in the strip list (what's the term for those again?)
+				if (deletions.indexOf(l[i]) != -1) {
+					l.splice(i, 1);
+					i--;
+				}
+			}
+			return l;
+		};
+
+		$('#wordCount').text(clean($('#scribbleArea').text().trim().split(' '), ['']).length);
 		$('#scribbleArea').keyup(function() {
-			$('#wordCount').text(this.value.split(' ').length - 1);
+			$('#wordCount').text(clean(this.value.trim().split(' '), ['']).length);
 		});
 	});
 </script>
