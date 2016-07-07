@@ -56,10 +56,12 @@ class User(Base):
         self.hashed_password = self.hash_password(password)
 
 
+## Association table for posts and hashtags many-to-many
 association_table = Table('association', Base.metadata,
     Column('post_id', Integer, ForeignKey('seven_fifties.id')),
     Column('hash_id', Integer, ForeignKey('hash_tags.id'))
 )
+
 
 class SevenFifty(Base):
     __tablename__ = 'seven_fifties'
@@ -106,16 +108,8 @@ class SevenFifty(Base):
         self.slug = self.text[0:63]
         self.user_id = user_id
         self.user = session.query(User).filter(User.id == self.user_id).first()
-
-        ## hashtag handling
-        #TODO: we can probably incorporate update_hashes here?
         self.update_hashes()
-        '''
-        re_hash = re.compile(ur'(\s+|^)(#[^\s]*)\b')
-        hashes = [s[1] for s in re.findall(re_hash, text)]
-        for h in hashes:
-            tag = HashTag.create_or_add(h, self)
-        '''
+
 
     def __repr__(self):
         return "'%s' on %s" % (self.slug, str(self.date))
