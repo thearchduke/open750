@@ -68,7 +68,7 @@ class SevenFifty(Base):
     def __init__(self, text, user_id):
         self.date = datetime.datetime.now()
         self.text = text
-        self.wordCount = len(self.text.split(' ')) - 1
+        self.wordCount = len(self.text.split()) 
         self.slug = self.text[0:63]
         self.user_id = user_id
         self.user = session.query(User).filter(User.id == self.user_id).first()

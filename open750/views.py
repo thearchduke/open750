@@ -117,7 +117,7 @@ def edit(id):
 	form = SevenFiftyForm(obj=s)
 	if form.validate_on_submit():
 		form.populate_obj(s)
-		s.wordCount = len(s.text.split(' ')) - 1
+		s.wordCount = len(s.text.split())
 		session.add(s)
 		session.commit()
 		flash('Thanks for updating your post \'%s.\'' % s.slug)
