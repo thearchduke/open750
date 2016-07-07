@@ -4,12 +4,7 @@
 Database models for open750. This work is distributed under the GPL, waivers, limitations etc.
 Copyright J. Tynan Burke 2016 http://www.tynanburke.com
 
-#TODO: Implement users and stuff, I guess
-
-#TODO: Hashtags. Here's the regex: (\s+|^)#([^\s]*)\b
-import re
-re_hash = re.compile(ur'(\s+|^)(#[^\s]*)\b')
-hashes = [s[1] for s in re.findall(re_hash)]
+#TODO: there's a lot of session commits going on here, we can consolidate that
 '''
 
 # Standard flask/sqlalchemy imports
@@ -80,12 +75,29 @@ class SevenFifty(Base):
     hashtags = relationship("HashTag", secondary=association_table, back_populates="posts")
 
     def update_hashes(self):
+        current = self.hashtags
+        new = []
         re_hash = re.compile(ur'(\s+|^)(#[^\s]*)\b')
         hashes = [s[1] for s in re.findall(re_hash, self.text)]
         for h in hashes:
             tag = HashTag.create_or_add(h, self)
-        session.add(self)
-        session.commit()
+            new.append(tag)
+        to_remove = set(current) - set(new)
+        for h in to_remove:
+            self.hashtags.remove(h)
+        #session.add(self)
+        #session.commit()
+
+    def update_object(self, save=True):
+        self.wordCount = len(self.text.split())
+        self.update_hashes()
+        self.slug = self.text[0:63]
+
+        #TODO: Save just for commit, not add? Need to read session docs
+        if save:
+            session.add(self)
+            session.commit()
+
 
     def __init__(self, text, user_id):
         self.date = datetime.datetime.now()
@@ -96,10 +108,14 @@ class SevenFifty(Base):
         self.user = session.query(User).filter(User.id == self.user_id).first()
 
         ## hashtag handling
+        #TODO: we can probably incorporate update_hashes here?
+        self.update_hashes()
+        '''
         re_hash = re.compile(ur'(\s+|^)(#[^\s]*)\b')
         hashes = [s[1] for s in re.findall(re_hash, text)]
         for h in hashes:
             tag = HashTag.create_or_add(h, self)
+        '''
 
     def __repr__(self):
         return "'%s' on %s" % (self.slug, str(self.date))

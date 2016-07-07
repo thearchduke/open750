@@ -137,10 +137,11 @@ def edit(id):
 	form = SevenFiftyForm(obj=s)
 	if form.validate_on_submit():
 		form.populate_obj(s)
-		s.wordCount = len(s.text.split())
-		s.update_hashes()
-		session.add(s)
-		session.commit()
+		s.update_object()
+		#s.wordCount = len(s.text.split())
+		#s.update_hashes()
+		#session.add(s)
+		#session.commit()
 		flash('Thanks for updating your post \'%s.\'' % s.slug)
 		return redirect(url_for('.home'))
 	new_post = False
