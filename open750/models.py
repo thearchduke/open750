@@ -121,6 +121,7 @@ class SevenFifty(Base):
         return "'%s' on %s" % (self.slug, str(self.date))
 
 
+## hashtags are all lowercase
 class HashTag(Base):
     __tablename__ = 'hash_tags'
     id = Column(Integer, primary_key=True)
@@ -130,6 +131,7 @@ class HashTag(Base):
 
     @classmethod
     def create_or_add(cls, name, post=None):
+        name = name.lower()
         test = session.query(cls).filter(cls.name == name).first()
         entity = None
         if test:
@@ -156,10 +158,10 @@ if __name__ == "__main__":
     if sys.argv[1] == 'mock':
         user1 = User('user1', 'password1', 'email1')
         user2 = User('user2', 'password2', 'email2')
-        post1 = SevenFifty('was it a bar or a bat i saw', 1)
-        post2 = SevenFifty('a man, a plan, a canal: panama', 1)
-        post3 = SevenFifty('gazing into the darkness', 2)
-        post4 = SevenFifty('i saw a creature driven and derided by vanity', 2)
-        post5 = SevenFifty('and my eyes burned with anger and anguish.', 2)
+        post1 = SevenFifty('was it a #bar or a #bat i #saw', 1)
+        post2 = SevenFifty('a man, a plan, a canal: panama. i #SAW the ships, i #saw them!', 1)
+        post3 = SevenFifty('gazing into the darkness, a #bat #flew #by', 2)
+        post4 = SevenFifty('i saw #a #creature driven and derided #by vanity', 2)
+        post5 = SevenFifty('and my eyes burned with anger and anguish, so i went to the #BAR.', 2)
         session.bulk_save_objects([user1, user2, post1, post2, post3, post4, post5])
         session.commit()
