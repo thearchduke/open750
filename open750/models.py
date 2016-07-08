@@ -8,7 +8,7 @@ Copyright J. Tynan Burke 2016 http://www.tynanburke.com
 '''
 
 # Standard flask/sqlalchemy imports
-from sqlalchemy import Table, Column, Integer, String, DateTime, Text, MetaData, ForeignKey, create_engine
+from sqlalchemy import Table, Column, Integer, String, DateTime, PickleType, Text, MetaData, ForeignKey, create_engine
 from sqlalchemy.orm import relationship, backref, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 import datetime
@@ -70,6 +70,7 @@ class SevenFifty(Base):
     wordCount = Column(Integer)
     text = Column(Text)
     slug = Column(String(64))
+    sentiment = Column(Integer)
 
     user_id = Column(Integer, ForeignKey('users.id'))
     user = relationship("User", back_populates='posts')
@@ -87,13 +88,12 @@ class SevenFifty(Base):
         to_remove = set(current) - set(new)
         for h in to_remove:
             self.hashtags.remove(h)
-        #session.add(self)
-        #session.commit()
 
     def update_object(self, save=True):
         self.wordCount = len(self.text.split())
         self.update_hashes()
         self.slug = self.text[0:63]
+        self.sentiment = AFINN.analyze_sentiment(self.text)
 
         #TODO: Save just for commit, not add? Need to read session docs
         if save:
@@ -109,10 +109,10 @@ class SevenFifty(Base):
         self.user_id = user_id
         self.user = session.query(User).filter(User.id == self.user_id).first()
         self.update_hashes()
-
+        self.sentiment = AFINN.analyze_sentiment(self.text)
 
     def __repr__(self):
-        return "'%s' on %s" % (self.slug, str(self.date))
+        return "'%s' on %s (sentiment: %s)" % (self.slug, str(self.date), str(self.sentiment))
 
 
 ## hashtags are all lowercase
@@ -145,11 +145,50 @@ class HashTag(Base):
         return "'%s' (%s)" % (self.name, str(self.posts))
 
 
+## sentiment analysis
+#TODO: Have this loaded in memory
+#TODO: is ugly hack, fix
+class AFINN(Base):
+    __tablename__ = 'afinn'
+    id = Column(Integer, primary_key=True)
+    word = Column(String(124))
+    value = Column(Integer)
+    store = Column(PickleType)
+
+    @classmethod
+    def analyze_sentiment(cls, text):
+        afinn = session.query(AFINN).first()
+        sentiment = sum(map(lambda word: afinn.store.get(word, 0), text.lower().split()))
+        return sentiment
+
+    #engine = dict(map(lambda (k,v): (k,int(v)), [ line.split('\t') for line in open("/static/data/AFINN-111.txt") ]))
+
+    '''
+    @classmethod
+    def analyze_sentiment(cls, text):
+        text = text.lower().strip().split()
+        sentiment = 0
+        for word in text:
+            afinn = session.query(AFINN).filter(AFINN.word == word).first()
+            if afinn:
+                sentiment += afinn.value
+        return sentiment
+        #sentiment = sum(map(lambda word: (session.query(AFINN).filter(AFINN.word == word).first().value or 0), text))
+    '''
+
+    def __repr__(self):
+        return "'%s', %s" % (self.word, str(self.value))
+
 ## Run models.py independently to create tables
 if __name__ == "__main__":
     Base.metadata.create_all(db)
 
     if sys.argv[1] == 'mock':
+        afinn = dict(map(lambda (k,v): (k,int(v)), [ line.split('\t') for line in open("open750/static/data/AFINN-111.txt") ]))
+        a = AFINN(word='engine', store=afinn)
+        session.add(a)
+        session.commit()
+
         user1 = User('user1', 'password1', 'email1')
         user2 = User('user2', 'password2', 'email2')
         post1 = SevenFifty('was it a #bar or a #bat i #saw', 1)
@@ -157,5 +196,17 @@ if __name__ == "__main__":
         post3 = SevenFifty('gazing into the darkness, a #bat #flew #by', 2)
         post4 = SevenFifty('i saw #a #creature driven and derided #by vanity', 2)
         post5 = SevenFifty('and my eyes burned with anger and anguish, so i went to the #BAR.', 2)
+
+        '''
+        adds = []
+        for word in afinn:
+            w = AFINN(word=word.decode('utf-8'), value=afinn[word])
+            adds.append(w)
+        session.bulk_save_objects(adds)
+        '''
+
         session.bulk_save_objects([user1, user2, post1, post2, post3, post4, post5])
         session.commit()
+
+    if sys.argv[1] == 'test':
+        print AFINN.analyze_sentiment("well that's good i guess. easy peasy green and whatnot")
