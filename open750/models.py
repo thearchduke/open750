@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+# -*- coding: utf-8 -*-
 '''
 Database models for open750. This work is distributed under the GPL, waivers, limitations etc.
 Copyright J. Tynan Burke 2016 http://www.tynanburke.com
@@ -29,10 +29,46 @@ session = Session()
 
 
 ## sentiment analysis
-#TODO: add credit
 #TODO: right now this skips punctuation stripping for unicode text; that is,
 #   text that can't convert to str doesn't get stripped.
 class AFINN(object):
+    '''
+    A sentiment analyzer. Run analyze_sentiment(t) on text t.
+    Couples with AFINN_Data to load corpus into memory for web app.
+
+    class AFINN is derived from the AFINN dataset, which has the following attribution:
+    AFINN is a list of English words rated for valence with an integer
+    between minus five (negative) and plus five (positive). The words have
+    been manually labeled by Finn Årup Nielsen in 2009-2011. The file
+    is tab-separated. There are two versions:
+
+    AFINN-111: Newest version with 2477 words and phrases.
+
+    AFINN-96: 1468 unique words and phrases on 1480 lines. Note that there
+    are 1480 lines, as some words are listed twice. The word list in not
+    entirely in alphabetic ordering.  
+
+    An evaluation of the word list is available in:
+
+    Finn Årup Nielsen, "A new ANEW: Evaluation of a word list for
+    sentiment analysis in microblogs", http://arxiv.org/abs/1103.2903
+
+    The list was used in: 
+
+    Lars Kai Hansen, Adam Arvidsson, Finn Årup Nielsen, Elanor Colleoni,
+    Michael Etter, "Good Friends, Bad News - Affect and Virality in
+    Twitter", The 2011 International Workshop on Social Computing,
+    Network, and Services (SocialComNet 2011).
+
+
+    This database of words is copyright protected and distributed under
+    "Open Database License (ODbL) v1.0"
+    http://www.opendatacommons.org/licenses/odbl/1.0/ or a similar
+    copyleft license.
+
+    See comments on the word list here:
+    http://fnielsen.posterous.com/old-anew-a-sentiment-about-sentiment-analysis
+    '''
     def analyze_sentiment(self, text):
         try:
             text = str(text).translate(string.maketrans("",""), string.punctuation)
@@ -178,13 +214,14 @@ class HashTag(Base):
 ## Run models.py independently to create tables
 #TODO: testing
 if __name__ == "__main__":
-    Base.metadata.create_all(db)
     try:
-        if sys.argv[1] == 'mock':
+        if sys.argv[1] == 'init':
+            Base.metadata.create_all(db)
             afinn_data = AFINN_Data()
             session.add(afinn_data)
             session.commit()
 
+        elif sys.argv[1] == 'mock':
             afinn = AFINN(session.query(AFINN_Data).first().store)
             user1 = User('user1', 'password1', 'email1')
             user2 = User('user2', 'password2', 'email2')
@@ -193,15 +230,11 @@ if __name__ == "__main__":
             post3 = SevenFifty('gazing into the darkness, a #bat #flew #by', 2)
             post4 = SevenFifty('i saw #a #creature driven and derided #by vanity', 2)
             post5 = SevenFifty('and my eyes burned with anger and anguish, so i went to the #BAR.', 2)
-            session.bulk_save_objects([user1, user2, post1, post2, post3, post4, post5, afinn_data])
+            session.bulk_save_objects([user1, user2, post1, post2, post3, post4, post5])
             session.commit()
 
-        if sys.argv[1] == 'test':
-            print afinn.analyze_sentiment("well that went well. and good, good good, better best. enough!")
-            #14
-            print afinn.analyze_sentiment("that was the worst goddamned opera i ever saw, it was terrible, i hated it.")
-            #-9
-            print afinn.analyze_sentiment("that. was. the. worst. goddamned. opera. i. ever. saw, it. was. terrible, i hated it.")
-            #-9
+        else:
+            print 'argument %s not found' % sys.argv[1]            
+
     except IndexError:
-        pass
+        print 'argument not provided'
