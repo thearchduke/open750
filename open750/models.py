@@ -30,6 +30,8 @@ session = Session()
 
 ## sentiment analysis
 #TODO: add credit
+#TODO: right now this skips punctuation stripping for unicode text; that is,
+#   text that can't convert to str doesn't get stripped.
 class AFINN(object):
     def analyze_sentiment(self, text):
         try:
@@ -54,13 +56,20 @@ try:
     afinn = AFINN(session.query(AFINN_Data).first().store)
 except:
     afinn = None
+
+
 ### Tables!
 
-## Index tables
-# none
+## Index & association tables
+
+# Association table for posts and hashtags many-to-many
+association_table = Table('association', Base.metadata,
+    Column('post_id', Integer, ForeignKey('seven_fifties.id')),
+    Column('hash_id', Integer, ForeignKey('hash_tags.id'))
+)
 
 
-## Objects we actually use
+## Tables for objects
 
 class User(Base):
     __tablename__ = "users"
@@ -82,13 +91,6 @@ class User(Base):
         self.name = name
         self.email = email
         self.hashed_password = self.hash_password(password)
-
-
-## Association table for posts and hashtags many-to-many
-association_table = Table('association', Base.metadata,
-    Column('post_id', Integer, ForeignKey('seven_fifties.id')),
-    Column('hash_id', Integer, ForeignKey('hash_tags.id'))
-)
 
 
 class SevenFifty(Base):
@@ -174,13 +176,11 @@ class HashTag(Base):
 
 
 ## Run models.py independently to create tables
-#TODO: get rid of these globals
 #TODO: testing
 if __name__ == "__main__":
     Base.metadata.create_all(db)
     try:
         if sys.argv[1] == 'mock':
-            global afinn
             afinn_data = AFINN_Data()
             session.add(afinn_data)
             session.commit()
@@ -197,8 +197,6 @@ if __name__ == "__main__":
             session.commit()
 
         if sys.argv[1] == 'test':
-            global afinn
-            afinn = AFINN(session.query(AFINN_Data).first().store)
             print afinn.analyze_sentiment("well that went well. and good, good good, better best. enough!")
             #14
             print afinn.analyze_sentiment("that was the worst goddamned opera i ever saw, it was terrible, i hated it.")

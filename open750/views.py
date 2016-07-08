@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from flask import Blueprint, render_template, url_for, request, redirect, flash, Response, abort
 from flask import session as flask_session
-from models import session, SevenFifty, User
+from models import session, SevenFifty, User, afinn
 from forms import SevenFiftyForm, CreateUserForm
 from functools import wraps
 import datetime
