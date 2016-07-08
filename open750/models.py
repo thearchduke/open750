@@ -29,13 +29,13 @@ session = Session()
 
 
 ## sentiment analysis
+#TODO: add credit
 class AFINN(object):
-
     def analyze_sentiment(self, text):
         try:
             text = str(text).translate(string.maketrans("",""), string.punctuation)
         except:
-            return 0
+            pass
         return sum(map(lambda word: self.sentiment_dict.get(word, 0), text.lower().split()))
 
     def __init__(self, corpus):
@@ -50,7 +50,10 @@ class AFINN_Data(Base):
     def __init__(self):
         self.store = dict(map(lambda (k,v): (k,int(v)), [ line.split('\t') for line in open("open750/static/data/AFINN-111.txt") ]))
 
-afinn = AFINN(session.query(AFINN_Data).first().store)
+try:
+    afinn = AFINN(session.query(AFINN_Data).first().store)
+except:
+    afinn = None
 ### Tables!
 
 ## Index tables
@@ -172,15 +175,16 @@ class HashTag(Base):
 
 ## Run models.py independently to create tables
 #TODO: get rid of these globals
+#TODO: testing
 if __name__ == "__main__":
     Base.metadata.create_all(db)
     try:
         if sys.argv[1] == 'mock':
+            global afinn
             afinn_data = AFINN_Data()
             session.add(afinn_data)
             session.commit()
 
-            global afinn
             afinn = AFINN(session.query(AFINN_Data).first().store)
             user1 = User('user1', 'password1', 'email1')
             user2 = User('user2', 'password2', 'email2')
@@ -196,7 +200,10 @@ if __name__ == "__main__":
             global afinn
             afinn = AFINN(session.query(AFINN_Data).first().store)
             print afinn.analyze_sentiment("well that went well. and good, good good, better best. enough!")
+            #14
             print afinn.analyze_sentiment("that was the worst goddamned opera i ever saw, it was terrible, i hated it.")
+            #-9
             print afinn.analyze_sentiment("that. was. the. worst. goddamned. opera. i. ever. saw, it. was. terrible, i hated it.")
+            #-9
     except IndexError:
         pass
