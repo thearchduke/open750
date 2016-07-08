@@ -14,7 +14,9 @@ from sqlalchemy.ext.declarative import declarative_base
 import datetime
 from passlib.hash import sha256_crypt
 import sys
+import os
 import re
+import string
 
 # Standard database connection infrastructure (set echo=False when you're done testing)
 Base = declarative_base()
@@ -26,6 +28,29 @@ Session = sessionmaker(bind=db)
 session = Session()
 
 
+## sentiment analysis
+class AFINN(object):
+
+    def analyze_sentiment(self, text):
+        try:
+            text = str(text).translate(string.maketrans("",""), string.punctuation)
+        except:
+            return 0
+        return sum(map(lambda word: self.sentiment_dict.get(word, 0), text.lower().split()))
+
+    def __init__(self, corpus):
+        self.sentiment_dict = corpus
+
+
+class AFINN_Data(Base):
+    __tablename__ = 'afinn_data'
+    id = Column(Integer, primary_key=True)
+    store = Column(PickleType)
+
+    def __init__(self):
+        self.store = dict(map(lambda (k,v): (k,int(v)), [ line.split('\t') for line in open("open750/static/data/AFINN-111.txt") ]))
+
+afinn = AFINN(session.query(AFINN_Data).first().store)
 ### Tables!
 
 ## Index tables
@@ -93,7 +118,7 @@ class SevenFifty(Base):
         self.wordCount = len(self.text.split())
         self.update_hashes()
         self.slug = self.text[0:63]
-        self.sentiment = AFINN.analyze_sentiment(self.text)
+        self.sentiment = afinn.analyze_sentiment(self.text)
 
         #TODO: Save just for commit, not add? Need to read session docs
         if save:
@@ -109,7 +134,7 @@ class SevenFifty(Base):
         self.user_id = user_id
         self.user = session.query(User).filter(User.id == self.user_id).first()
         self.update_hashes()
-        self.sentiment = AFINN.analyze_sentiment(self.text)
+        self.sentiment = afinn.analyze_sentiment(self.text)
 
     def __repr__(self):
         return "'%s' on %s (sentiment: %s)" % (self.slug, str(self.date), str(self.sentiment))
@@ -145,68 +170,33 @@ class HashTag(Base):
         return "'%s' (%s)" % (self.name, str(self.posts))
 
 
-## sentiment analysis
-#TODO: Have this loaded in memory
-#TODO: is ugly hack, fix
-class AFINN(Base):
-    __tablename__ = 'afinn'
-    id = Column(Integer, primary_key=True)
-    word = Column(String(124))
-    value = Column(Integer)
-    store = Column(PickleType)
-
-    @classmethod
-    def analyze_sentiment(cls, text):
-        afinn = session.query(AFINN).first()
-        sentiment = sum(map(lambda word: afinn.store.get(word, 0), text.lower().split()))
-        return sentiment
-
-    #engine = dict(map(lambda (k,v): (k,int(v)), [ line.split('\t') for line in open("/static/data/AFINN-111.txt") ]))
-
-    '''
-    @classmethod
-    def analyze_sentiment(cls, text):
-        text = text.lower().strip().split()
-        sentiment = 0
-        for word in text:
-            afinn = session.query(AFINN).filter(AFINN.word == word).first()
-            if afinn:
-                sentiment += afinn.value
-        return sentiment
-        #sentiment = sum(map(lambda word: (session.query(AFINN).filter(AFINN.word == word).first().value or 0), text))
-    '''
-
-    def __repr__(self):
-        return "'%s', %s" % (self.word, str(self.value))
-
 ## Run models.py independently to create tables
+#TODO: get rid of these globals
 if __name__ == "__main__":
     Base.metadata.create_all(db)
+    try:
+        if sys.argv[1] == 'mock':
+            afinn_data = AFINN_Data()
+            session.add(afinn_data)
+            session.commit()
 
-    if sys.argv[1] == 'mock':
-        afinn = dict(map(lambda (k,v): (k,int(v)), [ line.split('\t') for line in open("open750/static/data/AFINN-111.txt") ]))
-        a = AFINN(word='engine', store=afinn)
-        session.add(a)
-        session.commit()
+            global afinn
+            afinn = AFINN(session.query(AFINN_Data).first().store)
+            user1 = User('user1', 'password1', 'email1')
+            user2 = User('user2', 'password2', 'email2')
+            post1 = SevenFifty('was it a #bar or a #bat i #saw', 1)
+            post2 = SevenFifty('a man, a plan, a canal: panama. i #SAW the ships, i #saw them!', 1)
+            post3 = SevenFifty('gazing into the darkness, a #bat #flew #by', 2)
+            post4 = SevenFifty('i saw #a #creature driven and derided #by vanity', 2)
+            post5 = SevenFifty('and my eyes burned with anger and anguish, so i went to the #BAR.', 2)
+            session.bulk_save_objects([user1, user2, post1, post2, post3, post4, post5, afinn_data])
+            session.commit()
 
-        user1 = User('user1', 'password1', 'email1')
-        user2 = User('user2', 'password2', 'email2')
-        post1 = SevenFifty('was it a #bar or a #bat i #saw', 1)
-        post2 = SevenFifty('a man, a plan, a canal: panama. i #SAW the ships, i #saw them!', 1)
-        post3 = SevenFifty('gazing into the darkness, a #bat #flew #by', 2)
-        post4 = SevenFifty('i saw #a #creature driven and derided #by vanity', 2)
-        post5 = SevenFifty('and my eyes burned with anger and anguish, so i went to the #BAR.', 2)
-
-        '''
-        adds = []
-        for word in afinn:
-            w = AFINN(word=word.decode('utf-8'), value=afinn[word])
-            adds.append(w)
-        session.bulk_save_objects(adds)
-        '''
-
-        session.bulk_save_objects([user1, user2, post1, post2, post3, post4, post5])
-        session.commit()
-
-    if sys.argv[1] == 'test':
-        print AFINN.analyze_sentiment("well that's good i guess. easy peasy green and whatnot")
+        if sys.argv[1] == 'test':
+            global afinn
+            afinn = AFINN(session.query(AFINN_Data).first().store)
+            print afinn.analyze_sentiment("well that went well. and good, good good, better best. enough!")
+            print afinn.analyze_sentiment("that was the worst goddamned opera i ever saw, it was terrible, i hated it.")
+            print afinn.analyze_sentiment("that. was. the. worst. goddamned. opera. i. ever. saw, it. was. terrible, i hated it.")
+    except IndexError:
+        pass
