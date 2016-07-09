@@ -9,7 +9,7 @@ Copyright J. Tynan Burke 2016 http://www.tynanburke.com
 
 # Standard flask/sqlalchemy imports
 from sqlalchemy import Table, Column, Integer, String, DateTime, PickleType, Text, MetaData, ForeignKey, create_engine
-from sqlalchemy.orm import relationship, backref, sessionmaker
+from sqlalchemy.orm import relationship, backref, sessionmaker, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
 import datetime
 from passlib.hash import sha256_crypt
@@ -20,12 +20,15 @@ import string
 
 # Standard database connection infrastructure (set echo=False when you're done testing)
 Base = declarative_base()
-db = create_engine('sqlite:///open750.db', echo=False)
+db = create_engine('sqlite:///750.db', echo=False)
 
 # Open the session
 metadata = MetaData(db)
-Session = sessionmaker(bind=db)
-session = Session()
+session = scoped_session(sessionmaker(bind=db))
+
+#TODO: switch to flask-sqlalchemy library
+#Session = sessionmaker(bind=db)
+#session = Session()
 
 
 ## sentiment analysis
@@ -87,6 +90,7 @@ class AFINN_Data(Base):
 
     def __init__(self):
         self.store = dict(map(lambda (k,v): (k,int(v)), [ line.split('\t') for line in open("open750/static/data/AFINN-111.txt") ]))
+
 
 try:
     afinn = AFINN(session.query(AFINN_Data).first().store)
@@ -225,14 +229,14 @@ if __name__ == "__main__":
             afinn = AFINN(session.query(AFINN_Data).first().store)
             user1 = User('user1', 'password1', 'email1')
             user2 = User('user2', 'password2', 'email2')
+            session.bulk_save_objects([user1,user2])
             post1 = SevenFifty('was it a #bar or a #bat i #saw', 1)
             post2 = SevenFifty('a man, a plan, a canal: panama. i #SAW the ships, i #saw them!', 1)
             post3 = SevenFifty('gazing into the darkness, a #bat #flew #by', 2)
             post4 = SevenFifty('i saw #a #creature driven and derided #by vanity', 2)
             post5 = SevenFifty('and my eyes burned with anger and anguish, so i went to the #BAR.', 2)
-            session.bulk_save_objects([user1, user2, post1, post2, post3, post4, post5])
-            session.commit()
-
+            session.bulk_save_objects([post1, post2, post3, post4, post5])
+            session.commit()# is this necessary?
         else:
             print 'argument %s not found' % sys.argv[1]            
 

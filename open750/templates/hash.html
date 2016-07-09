@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block header %}Home{% endblock %}
+
+{% block headline %}
+	<h2>Hashtag Details</h2>
+{% endblock %}
+
+{% block body %}
+<div class="row">
+<div class="c10">
+
+<h3><i>"{{ h.name }}"</i></h3>
+
+<p class="reader" style="white-space: pre-wrap;">
+<ul>
+	{% for post in p %}
+	<li>
+		<i><a href="{{ url_for('.read', id=post.id) }}">"{{ post.slug }}..."</a></i></h3> ({{ post.wordCount }} words) on {{ post.date.month }}.{{ post.date.day }}.{{ post.date.year }}
+	</li>
+	{% endfor %}
+</ul>
+</p>
+
+</div>
+</div>
+{% endblock %}

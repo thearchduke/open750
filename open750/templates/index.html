@@ -16,6 +16,15 @@
 	{% for entry in s %}
 		<li>
 			<a href="{{ url_for('open750.read', id=entry.id) }}">{{ entry.slug }}"</a> ({{ entry.wordCount }} words) on {{ entry.date.month }}.{{ entry.date.day }}.{{ entry.date.year }}
+
+			{% if entry.hashtags %}
+			<ul>
+				{% for tag in entry.hashtags %}
+				<li><a href="{{ url_for('.view_hash', name=tag.name) }}">{{ tag.name }}</a></li>
+				{% endfor %}
+			</ul>
+			{% endif %}
+
 		</li>
 	{% endfor %}
 </ul>

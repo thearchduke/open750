@@ -9,9 +9,16 @@
 <div class="row">
 <div class="c10">
 
-<h3><i>"{{ s.slug }}..."</i></h3> ({{ s.wordCount }} words) on {{ s.date.month }}.{{ s.date.day }}.{{ s.date.year }}
+<h4><i>"{{ s.slug }}..."</i></h4> ({{ s.wordCount }} words) on {{ s.date.month }}.{{ s.date.day }}.{{ s.date.year }} (sentiment: {{ s.sentiment }})
 <br /><a href="{{ url_for('.edit', id=s.id) }}">edit</a>
-
+	{% if s.hashtags %}
+	<br/><br/>Hashtags:
+	<ul>
+		{% for tag in s.hashtags %}
+		<li><a href="{{ url_for('.view_hash', name=tag.name) }}">{{ tag.name }}</a></li>
+		{% endfor %}
+	</ul>
+	{% endif %}
 <p class="reader" style="white-space: pre-wrap;">{% if config.HTML_SAFE %}{{ s.text|safe }}{% else %}{{ s.text }}{% endif %}</p>
 
 </div>

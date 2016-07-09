@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from flask import Blueprint, render_template, url_for, request, redirect, flash, Response, abort
 from flask import session as flask_session
-from models import session, SevenFifty, User, afinn
+from models import session, SevenFifty, User, HashTag, afinn
 from forms import SevenFiftyForm, CreateUserForm
 from functools import wraps
 import datetime
@@ -10,10 +10,14 @@ open750 = Blueprint('open750', __name__, template_folder='templates', static_fol
 
 
 ## Errors and stuff
+#TODO: implement get_or_404 function (flask-sqlalchemy probably has this lol)
 @open750.errorhandler(404)
 def page_not_found(e):
     return render_template("404.html")
 
+@open750.teardown_request
+def remove_session(ex=None):
+	session.remove()
 
 ## Logins
 def check_auth(username, password):
@@ -21,7 +25,7 @@ def check_auth(username, password):
     password combination is valid.
     """
     u = session.query(User).filter(User.name == username).first()
-    if u.verify_password(password):
+    if u and u.verify_password(password):
     	flask_session['current_user'] = {'name': u.name, 'id': u.id}
     	return True
     else:
@@ -146,6 +150,16 @@ def edit(id):
 		return redirect(url_for('.home'))
 	new_post = False
 	return render_template('write.html', form=form, s=s, new_post = new_post)
+
+@open750.route('/#/<name>', methods=['GET'])
+@requires_auth
+def view_hash(name):
+	h = session.query(HashTag).filter(HashTag.name == name).first()
+	if not h: return render_template('404.html'), 404
+	p = filter(lambda x: \
+		x.user_id == flask_session['current_user']['id'], \
+		h.posts)
+	return render_template('hash.html', h=h, p=p)
 
 
 ### Testing and stuff
